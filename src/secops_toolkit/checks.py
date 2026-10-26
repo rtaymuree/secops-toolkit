@@ -27,6 +27,9 @@ def system_info() -> dict:
         "disk_percent": round(disk.used / disk.total * 100, 1),
     }
 
+def is_exposed(address: str) -> bool:
+    return address not in ("127.0.0.1", "::1")
+
 
 def listening_ports() -> dict:
     found = {}
@@ -36,15 +39,21 @@ def listening_ports() -> dict:
                 name = psutil.Process(conn.pid).name() if conn.pid else "unknown"
             except (psutil.NoSuchProcess, psutil.AccessDenied):
                 name = "unknown"
-            found[conn.laddr.port] = name
+            port = conn.laddr.port
+            exposed = is_exposed(conn.laddr.ip)
+            entry = found.get(port)
+            if entry is None or (exposed and not entry["exposed"]):
+                found[port] = {"process": name, "address": conn.laddr.ip, "exposed": exposed}
     return dict(sorted(found.items()))
-
 
 def risky_ports(ports: dict) -> dict:
     return {p: RISKY_PORTS[p] for p in ports if p in RISKY_PORTS}
 
 
-def build_ai_prompt(info: dict, ports: dict, risky: dict) -> str:
+    port_lines = "\n".join(
+        f"- {p}: {v['process']} ({'reachable from network' if v['exposed'] else 'localhost only'})"
+        for p, v in ports.items()
+    )
     port_lines = "\n".join(f"- {p}: {name}" for p, name in ports.items())
     risky_lines = "\n".join(f"- {p}: {desc}" for p, desc in risky.items()) or "- none flagged"
     return f"""You are a friendly senior IT security mentor. I am a beginner IT administrator.

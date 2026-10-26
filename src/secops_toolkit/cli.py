@@ -9,9 +9,10 @@ def print_report(info: dict, ports: dict, risky: dict) -> None:
     print(f"OS:     {info['os']}")
     print(f"CPU:    {info['cpu_percent']}%   RAM: {info['memory_percent']}%   Disk: {info['disk_percent']}%")
     print("\nListening ports:")
-    for port, name in ports.items():
+    for port, d in ports.items():
+        where = "NETWORK" if d["exposed"] else "localhost"
         flag = f"  <-- RISKY: {risky[port]}" if port in risky else ""
-        print(f"  {port:<6} {name}{flag}")
+        print(f"  {port:<6} {d['process']:<22} {where:<10}{flag}")
 
 
 def main() -> None:
@@ -34,4 +35,3 @@ def main() -> None:
         print(text)
         Path("ai_prompt.txt").write_text(text, encoding="utf-8")
         print("Saved to ai_prompt.txt")
-        
