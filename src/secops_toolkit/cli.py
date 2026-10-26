@@ -21,7 +21,10 @@ def main() -> None:
     )
     sub = parser.add_subparsers(dest="command", required=True)
     sub.add_parser("report", help="Show system info and listening ports")
-    sub.add_parser("prompt", help="Build an AI prompt from the report")
+    prompt_cmd = sub.add_parser("prompt", help="Build an AI prompt from the report")
+    prompt_cmd.add_argument(
+        "--redact", action="store_true", help="Hide third-party software names"
+    )
     args = parser.parse_args()
 
     info = checks.system_info()
@@ -31,6 +34,8 @@ def main() -> None:
     if args.command == "report":
         print_report(info, ports, risky)
     else:
+        if args.redact:
+            ports = checks.redact_ports(ports)
         text = checks.build_ai_prompt(info, ports, risky)
         print(text)
         Path("ai_prompt.txt").write_text(text, encoding="utf-8")

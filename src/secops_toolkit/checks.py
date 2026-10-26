@@ -77,3 +77,19 @@ Listening ports (port: process):
 Ports my tool flagged as risky:
 {risky_lines}
 """
+
+
+WINDOWS_CORE = {
+    "svchost.exe", "system", "lsass.exe",
+    "wininit.exe", "services.exe", "spoolsv.exe",
+}
+
+
+def redact_ports(ports: dict) -> dict:
+    redacted = {}
+    for port, d in ports.items():
+        name = d["process"]
+        if name.lower() not in WINDOWS_CORE:
+            name = "third-party-app"
+        redacted[port] = {**d, "process": name}
+    return redacted
