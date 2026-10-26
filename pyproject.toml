@@ -1,0 +1,19 @@
+[project]
+name = "secops-toolkit"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "rtaymuree", email = "reztaymuree@gmail.com" }
+]
+requires-python = ">=3.15"
+dependencies = [
+    "psutil>=7.2.2",
+]
+
+[project.scripts]
+secops-toolkit = "secops_toolkit:main"
+
+[build-system]
+requires = ["uv_build>=0.13.5,<0.14.0"]
+build-backend = "uv_build"
